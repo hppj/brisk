@@ -72,6 +72,10 @@
               value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks" />
     <property name="pig.dir" value="${basedir}/resources/pig"/>
     <property name="pig.dir.lib" value="${pig.dir}/lib"/>
+	
+	<!-- Mahout -->
+    <property name="mahout.dir" value="${basedir}/resources/mahout"/>
+    <property name="mahout.dir.lib" value="${mahout.dir}/lib"/>
 
     <property name="base.version" value="0.0.1"/>
     <condition property="version" value="${base.version}">
@@ -125,7 +129,10 @@
 		</fileset>
 	    <fileset dir="${pig.dir.lib}">
             <include name="**/*.jar" />
-        </fileset>	   
+        </fileset>
+        <fileset dir="${mahout.dir.lib}">
+            <include name="**/*.jar" />
+        </fileset>
 	</path>
 
 	<!--
@@ -293,11 +300,23 @@
 			<remoteRepository refid="apache"/>
 			<remoteRepository refid="java.net2"/>
 		</artifact:dependencies>
+		
         <artifact:dependencies filesetId="pig-jars"
 			     cacheDependencyRefs="true" 
                  dependencyRefsBuildFile="${build.dir}/build-pig-dependencies.xml">
 	        <dependency groupId="org.apache.pig" artifactId="pig" version="${pig.build.version}"/>
 		</artifact:dependencies>
+		
+		<!-- Mahout dependencies -->
+        <artifact:dependencies filesetId="mahout-jars"
+                 cacheDependencyRefs="true" 
+                 dependencyRefsBuildFile="${build.dir}/build-mahout-dependencies.xml">
+            <dependency groupId="org.apache.mahout" artifactId="mahout-core" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-math" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-buildtools" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-utils" version="${mahout.build.version}"/>
+        </artifact:dependencies>
 
 		<artifact:dependencies pathId="cobertura.classpath">
 			<dependency groupId="net.sourceforge.cobertura" artifactId="cobertura" version="${cobertura.version}"/>
@@ -365,6 +384,14 @@
 	            </rsel:not>
 	        </restrict>	
 	        <mapper type="flatten"/>
+        </copy>
+		
+        <copy todir="${mahout.dir.lib}">
+            <restrict>
+                <fileset refid="mahout-jars"/>
+            	<rsel:name name="*mahout-*.jar"/>
+            </restrict> 
+            <mapper type="flatten"/>
         </copy>
 	</target>
 
@@ -752,6 +779,7 @@
 				<include name="resources/hadoop/bin/*"/>
 				<include name="resources/hive/bin/*"/>
 	            <include name="resources/pig/bin/*"/>
+				<include name="resources/mahout/bin/*"/>
 				<not>
 					<filename name="bin/*.in.sh" />
 				</not>
@@ -790,6 +818,7 @@
 				<include name="resources/hadoop/bin/*"/>
 				<include name="resources/hive/bin/*"/>
 	            <include name="resources/pig/bin/*"/>
+				<include name="resources/mahout/bin/*"/>
 				<include name="demos/**/bin/*"/>
 				<exclude name="bin/*.in.sh" />
 				<exclude name="bin/*.bat" />
