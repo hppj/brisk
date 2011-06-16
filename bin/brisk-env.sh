@@ -94,5 +94,7 @@ export HIVE_LOG_ROOT=$BRISK_LOG_ROOT/hive
 
 #
 # Initialize Mahout env
-export MAHOUT_CONF_DIR=$BRISK_HOME/resources/mahout/conf
+export MAHOUT_HOME=$BRISK_HOME/resources/mahout
+export MAHOUT_CONF_DIR=$MAHOUT_HOME/conf
+export MAHOUT_BIN=$MAHOUT_HOME/bin
 
