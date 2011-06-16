@@ -130,7 +130,7 @@
 	    <fileset dir="${pig.dir.lib}">
             <include name="**/*.jar" />
         </fileset>
-        <fileset dir="${mahout.dir.lib}">
+        <fileset dir="${mahout.dir}">
             <include name="**/*.jar" />
         </fileset>
 	</path>
@@ -159,6 +159,10 @@
 			<include name="**/*.jar"/>
 		</delete>
 		<delete dir="${hive.dir.lib}" />
+		<delete dir="${mahout.dir.lib}" />
+		<delete di="${mahout.dir}" >
+            <include name="**/*.jar"/>
+        </delete>
 	</target>
 	<target depends="clean" name="cleanall"/>
 
@@ -312,7 +316,9 @@
                  cacheDependencyRefs="true" 
                  dependencyRefsBuildFile="${build.dir}/build-mahout-dependencies.xml">
             <dependency groupId="org.apache.mahout" artifactId="mahout-core" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-core" version="${mahout.build.version}" classifier="job"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}" classifier="job"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-math" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-buildtools" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-utils" version="${mahout.build.version}"/>
@@ -386,11 +392,21 @@
 	        <mapper type="flatten"/>
         </copy>
 		
-        <copy todir="${mahout.dir.lib}">
+        <copy todir="${mahout.dir}">
             <restrict>
                 <fileset refid="mahout-jars"/>
             	<rsel:name name="*mahout-*.jar"/>
             </restrict> 
+            <mapper type="flatten"/>
+        </copy>
+
+        <copy todir="${mahout.dir.lib}">
+            <restrict>
+                <fileset refid="mahout-jars"/>
+                <rsel:not>
+                    <rsel:name name="*mahout-*.jar"/>
+                </rsel:not>
+            </restrict>
             <mapper type="flatten"/>
         </copy>
 	</target>
