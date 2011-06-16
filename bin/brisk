@@ -114,6 +114,11 @@ case "$1" in
         $PIG_HOME/bin/pig $*
         exit $?
         ;;
+    mahout)
+        shitf
+        echo "mahout needs to be implemented"
+        exit 0
+        ;;
     *)
         echo "$0: cassandra [options] | hadoop [options] | hive [options] | pig [options]"
         exit 1
