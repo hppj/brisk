@@ -5,6 +5,10 @@ resources/cassandra/lib
 resources/hadoop/lib
 resources/hadoop/hadoop-*.jar
 resources/hive/lib
+resources/mahout/*.jar
+resources/mahout/lib/*.jar
+resources/pig/*.jar
+resources/pig/lib/*.jar
 *~
 .project
 .classpath
