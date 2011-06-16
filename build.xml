@@ -323,7 +323,7 @@
             </dependency>
             <dependency groupId="org.apache.mahout" artifactId="mahout-math" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-buildtools" version="${mahout.build.version}"/>
-            <dependency groupId="org.apache.mahout" artifactId="mahout-utils" version="${mahout.build.version}"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-integration" version="${mahout.build.version}"/>
         </artifact:dependencies>
 
 		<artifact:dependencies pathId="cobertura.classpath">
