@@ -115,9 +115,17 @@ case "$1" in
         exit $?
         ;;
     mahout)
-        shitf
-        echo "mahout needs to be implemented"
-        exit 0
+        shift
+        
+        if [ "x$JOBTRACKER" != "x" ]; then
+            HADOOP_JT="-Dbrisk.job.tracker=$JOBTRACKER"
+        else4
+            echo "Unable to run $HADOOP_CMD: jobtracker not found"
+            exit 2
+        fi
+        echo "Running: $MAHOUT_BIN/mahout $HADOOP_JT $@"
+        $MAHOUT_BIN/mahout $HADOOP_JT "$@"
+        exit $?
         ;;
     *)
         echo "$0: cassandra [options] | hadoop [options] | hive [options] | pig [options]"
