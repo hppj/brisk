@@ -117,9 +117,10 @@ case "$1" in
     mahout)
         shift
         
+        JOBTRACKER=`$BIN/brisktool jobtracker`
         if [ "x$JOBTRACKER" != "x" ]; then
             HADOOP_JT="-Dbrisk.job.tracker=$JOBTRACKER"
-        else4
+        else
             echo "Unable to run $HADOOP_CMD: jobtracker not found"
             exit 2
         fi
