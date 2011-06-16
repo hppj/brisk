@@ -54,6 +54,7 @@ done
 # Initialize Hadoop env
 #
 export HADOOP_HOME=$BRISK_HOME/resources/hadoop
+export HADOOP_CONF_DIR=$HADOOP_HOME/conf
 export HADOOP_BIN=$HADOOP_HOME/bin
 export HADOOP_LOG_DIR=$BRISK_LOG_ROOT/hadoop
 
