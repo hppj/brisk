@@ -160,7 +160,7 @@
 		</delete>
 		<delete dir="${hive.dir.lib}" />
 		<delete dir="${mahout.dir.lib}" />
-		<delete di="${mahout.dir}" >
+		<delete dir="${mahout.dir}" >
             <include name="**/*.jar"/>
         </delete>
 	</target>
@@ -318,7 +318,9 @@
             <dependency groupId="org.apache.mahout" artifactId="mahout-core" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-core" version="${mahout.build.version}" classifier="job"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}"/>
-            <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}" classifier="job"/>
+            <dependency groupId="org.apache.mahout" artifactId="mahout-examples" version="${mahout.build.version}" classifier="job">
+                <exclusion groupId="org.slf4j" artifactId="slf4j-api"/>
+            </dependency>
             <dependency groupId="org.apache.mahout" artifactId="mahout-math" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-buildtools" version="${mahout.build.version}"/>
             <dependency groupId="org.apache.mahout" artifactId="mahout-utils" version="${mahout.build.version}"/>
@@ -405,6 +407,9 @@
                 <fileset refid="mahout-jars"/>
                 <rsel:not>
                     <rsel:name name="*mahout-*.jar"/>
+                </rsel:not>
+                <rsel:not>
+                     <rsel:name name="*slf4j*.jar"/>
                 </rsel:not>
             </restrict>
             <mapper type="flatten"/>
