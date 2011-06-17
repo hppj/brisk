@@ -49,10 +49,13 @@ case "$1" in
                     else
                         MAINCLASS=$3
                     fi
-                    $HADOOP_BIN/hadoop $HADOOP_CMD $HADOOP_JAR $MAINCLASS $HADOOP_JT "${@:4}"
+                    
+                    HADOOP_OPTS="$HADOOP_OPTS $HADOOP_JT"                    
+                    $HADOOP_BIN/hadoop $HADOOP_CMD $HADOOP_JAR $MAINCLASS  "${@:4}"
                     exit $?
-                else
-                    $HADOOP_BIN/hadoop $HADOOP_CMD $HADOOP_JT "${@:2}"
+                else                   
+                    HADOOP_OPTS="$HADOOP_OPTS $HADOOP_JT"  
+                    $HADOOP_BIN/hadoop $HADOOP_CMD "${@:2}"
                     exit $?
                 fi
             ;;
@@ -124,9 +127,11 @@ case "$1" in
             echo "Unable to run $HADOOP_CMD: jobtracker not found"
             exit 2
         fi
-        echo "Running: $MAHOUT_BIN/mahout $HADOOP_JT $@"
-        $MAHOUT_BIN/mahout $HADOOP_JT "$@"
-        exit $?
+        
+        HADOOP_OPTS="$HADOOP_OPTS $HADOOP_JT"
+        echo "Running: $MAHOUT_BIN/mahout $@"
+        $MAHOUT_BIN/mahout "$@"
+        exit 0
         ;;
     *)
         echo "$0: cassandra [options] | hadoop [options] | hive [options] | pig [options]"
