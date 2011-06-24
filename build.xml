@@ -409,6 +409,9 @@
                     <rsel:name name="*mahout-*.jar"/>
                 </rsel:not>
                 <rsel:not>
+                    <rsel:name name="*hadoop-*.jar"/>
+                </rsel:not>
+                <rsel:not>
                      <rsel:name name="*slf4j*.jar"/>
                 </rsel:not>
             </restrict>
