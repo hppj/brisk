@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FSOutputSummer;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.FileOutputCommitter;
 import org.apache.thrift.transport.TTransportException;
 
 public class CassandraFileSystemTest extends CleanupHelper
@@ -78,7 +79,6 @@ public class CassandraFileSystemTest extends CleanupHelper
     private void testFileSystem(boolean flush) throws Exception
     {
         CassandraFileSystem fs = new CassandraFileSystem();
-
         fs.initialize(URI.create("cfs://localhost:"+DatabaseDescriptor.getRpcPort()+"/"), new Configuration());
 
         fs.mkdirs(new Path("/mytestdir"));
@@ -167,7 +167,6 @@ public class CassandraFileSystemTest extends CleanupHelper
     public void testFileSystemSeek() throws Exception
     {
         CassandraFileSystem fs = new CassandraFileSystem();
-
         fs.initialize(URI.create("cfs://localhost:"+DatabaseDescriptor.getRpcPort()+"/"), new Configuration());
 
         // Create the test directory
@@ -195,6 +194,50 @@ public class CassandraFileSystemTest extends CleanupHelper
         
         in.close();
     }
+    
+    @Test
+    public void testFileSystemMixedContent() throws Exception
+    {
+        CassandraFileSystem fs = new CassandraFileSystem();
+        fs.initialize(URI.create("cfs://localhost:"+DatabaseDescriptor.getRpcPort()+"/"), new Configuration());
+        
+        // Create the test directory
+        fs.mkdirs(new Path("/mytestdir3"));
+        Path path = new Path("/mytestdir3/test");
+        
+        // Create the test file to write sample data to.
+        FSDataOutputStream out = fs.create(path);
+        
+        File expected = File.createTempFile("testcfs3", "expected");
+        DataOutputStream expectedOut = new DataOutputStream(new FileOutputStream(expected));
+        
+        // Note: Here we write to both, the Hadoop file and to a temp (used to compare their MD5)
+        
+        // Write some integers
+        for(int i=0; i<2000; i++)
+        {
+            out.writeInt(i);
+            expectedOut.writeInt(i);
+        }
+        
+        // Write some UTF
+        out.writeUTF("we are saving a string here");
+        expectedOut.writeUTF("we are saving a string here");
+        
+        // Write some long values
+        for(long l=0; l<20; l++)
+        {    
+            out.writeLong(l);
+            expectedOut.writeLong(l);
+        }
+        
+        out.close();
+        
+        // Let's try to open it back and read its data.
+        FSDataInputStream in = fs.open(path);
+     
+        assertDigest(new FileInputStream(expected), in);
+    }
 
 
 	private void fillArray(char[] buf) {
@@ -205,24 +248,25 @@ public class CassandraFileSystemTest extends CleanupHelper
 
 
 	private void assertDigest(File srcFile, File outFile) throws Exception {
-		MessageDigest md5 = MessageDigest.getInstance("MD5");
-		
+				
 		InputStream srcFileIn = null;
 		InputStream outFileIn = null;
-		try {
+		try 
+		{
 			srcFileIn = new BufferedInputStream(new FileInputStream(srcFile));
-			byte[] expected = Util.digestInputStream(md5, srcFileIn);
-			
-			outFileIn = new BufferedInputStream(new FileInputStream(outFile));
-			byte[] actual = Util.digestInputStream(md5, outFileIn);
-			
-			Assert.assertArrayEquals(expected, actual);
-			
+     		outFileIn = new BufferedInputStream(new FileInputStream(outFile));
+			assertDigest(srcFileIn, outFileIn);			
 		} finally {
 			srcFileIn.close();
 			outFileIn.close();
-		}
-		
+		}		
+	}
+	
+	private void assertDigest(InputStream a1, InputStream a2) throws Exception {
+	    MessageDigest md5 = MessageDigest.getInstance("MD5");
+	    byte[] expected = Util.digestInputStream(md5, a1);
+	    byte[] actual = Util.digestInputStream(md5, a2);
+	    Assert.assertArrayEquals(expected, actual);
 	}
 
 }
