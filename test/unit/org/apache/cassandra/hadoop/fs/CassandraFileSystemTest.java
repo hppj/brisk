@@ -40,6 +40,9 @@ import org.apache.cassandra.db.Table;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FSOutputSummer;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.thrift.transport.TTransportException;
@@ -158,6 +161,39 @@ public class CassandraFileSystemTest extends CleanupHelper
         
         // Verify the digests
         assertDigest(tmp, out);
+    }
+    
+    @Test
+    public void testFileSystemSeek() throws Exception
+    {
+        CassandraFileSystem fs = new CassandraFileSystem();
+
+        fs.initialize(URI.create("cfs://localhost:"+DatabaseDescriptor.getRpcPort()+"/"), new Configuration());
+
+        // Create the test directory
+        fs.mkdirs(new Path("/mytestdir2"));
+        Path path = new Path("/mytestdir2/test");
+        
+        // Create the test file to write sample data to.
+        FSDataOutputStream out = fs.create(path);
+
+        for(int i=0; i<500; i++)
+            out.writeInt(i);
+
+        out.close();
+
+        // Let's try to open it back and read its data.
+        FSDataInputStream in = fs.open(path);
+
+        in.seek(200); // 200 / 4 = skip 50 integers. Still have 450 to read.
+        
+        for (int i = 50; i < 500; i++)
+        {
+            int res = in.readInt();
+            assertEquals(i, res);
+        }
+        
+        in.close();
     }
 
 
