@@ -296,7 +296,7 @@ public class CassandraFileSystemTest extends CleanupHelper
                 position = reader.getPosition();
                 i++;
             }
-            Assert.assertEquals(150000, i);
+            Assert.assertEquals(20000, i);
 
         } catch (Exception e) {
             e.printStackTrace();
