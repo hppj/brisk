@@ -20,16 +20,22 @@ package org.apache.cassandra.hadoop.fs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
-
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import org.apache.cassandra.CleanupHelper;
 import org.apache.cassandra.EmbeddedServer;
@@ -42,11 +48,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FSOutputSummer;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileOutputCommitter;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.thrift.transport.TTransportException;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class CassandraFileSystemTest extends CleanupHelper
 {
@@ -237,6 +247,64 @@ public class CassandraFileSystemTest extends CleanupHelper
         FSDataInputStream in = fs.open(path);
      
         assertDigest(new FileInputStream(expected), in);
+    }
+    
+    @Test
+    public void testSequenceFile() throws Exception {
+        // Init
+        CassandraFileSystem fs = new CassandraFileSystem();
+        Configuration conf = new Configuration();
+        fs.initialize(URI.create("cfs://localhost:"+DatabaseDescriptor.getRpcPort()+"/"), conf);
+        
+        // Create the test directory
+        fs.mkdirs(new Path("/mytestdir4"));
+        Path filePath = new Path("/mytestdir4/test");            
+
+        SequenceFile.Writer writer = null;
+        org.apache.hadoop.io.Text wKey = new org.apache.hadoop.io.Text();
+        org.apache.hadoop.io.Text wValue = new org.apache.hadoop.io.Text();
+        wValue.set("this is the only line");
+
+        // Save some data.
+        try {
+            writer = SequenceFile.createWriter(fs, conf, filePath, wKey.getClass(), wValue.getClass());
+            for (int i = 0 ; i < 150000 ; i++)
+            {   
+                wKey.set("" + i);                
+                writer.append(wKey, wValue);
+            }          
+        }
+
+        finally {
+            writer.close();
+        }      
+        
+        // Now let's read it
+        SequenceFile.Reader reader = null;
+
+        try {
+            reader = new SequenceFile.Reader(fs, filePath, conf);
+            Writable rKey = (Writable) ReflectionUtils.newInstance(reader.getKeyClass(), conf);
+            Writable rValue = (Writable) ReflectionUtils.newInstance(reader.getValueClass(), conf);
+
+            long position = reader.getPosition();
+
+            int i = 0;
+            while (reader.next(rKey, rValue)) {
+                String syncSeen = reader.syncSeen() ? "*" : "";
+                System.out.printf("[%s%s]\t%s\t%s\n", position, syncSeen, rKey, rValue);
+                position = reader.getPosition();
+                i++;
+            }
+            Assert.assertEquals(150000, i);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        finally {
+            reader.close();
+        }
     }
 
 
