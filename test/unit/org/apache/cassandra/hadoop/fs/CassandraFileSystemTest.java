@@ -268,7 +268,7 @@ public class CassandraFileSystemTest extends CleanupHelper
         // Save some data.
         try {
             writer = SequenceFile.createWriter(fs, conf, filePath, wKey.getClass(), wValue.getClass());
-            for (int i = 0 ; i < 150000 ; i++)
+            for (int i = 0 ; i < 20000 ; i++)
             {   
                 wKey.set("" + i);                
                 writer.append(wKey, wValue);
